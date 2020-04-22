@@ -1,6 +1,6 @@
 import { getRepository, getCustomRepository } from 'typeorm';
 
-// import AppError from '../errors/AppError';
+import AppError from '../errors/AppError';
 
 import Transaction from '../models/Transaction';
 import Category from '../models/Category';
@@ -25,7 +25,7 @@ class CreateTransactionService {
     const categoriesRepository = getRepository(Category);
 
     if (type !== 'income' && type !== 'outcome') {
-      throw Error('This transaction must be income or outcome.');
+      throw new AppError('This transaction must be income or outcome.');
     }
 
     const balance = await transactionsRepository.getBalance();
@@ -34,7 +34,7 @@ class CreateTransactionService {
       const { total } = balance;
 
       if (value > total) {
-        throw Error('This transaction has a outcome bigger than total.');
+        throw new AppError('This transaction has a outcome bigger than total.');
       }
     }
 
@@ -43,7 +43,7 @@ class CreateTransactionService {
     });
 
     if (!categoryTransaction) {
-      categoryTransaction = await categoriesRepository.create({
+      categoryTransaction = categoriesRepository.create({
         title: category,
       });
 
@@ -57,7 +57,7 @@ class CreateTransactionService {
       category_id: categoryTransaction.id,
     });
 
-    await categoriesRepository.save(transaction);
+    await transactionsRepository.save(transaction);
 
     return transaction;
   }
