@@ -12,13 +12,13 @@ class DeleteTransactionService {
   public async execute({ id }: Request): Promise<void> {
     const transactionsRepository = getCustomRepository(TransactionRepository);
 
-    const transactionId = await transactionsRepository.findOne(id);
+    const transaction = await transactionsRepository.findOne(id);
 
-    if (!transactionId) {
+    if (!transaction) {
       throw new AppError('Transaction not found.');
     }
 
-    await transactionsRepository.remove(transactionId);
+    await transactionsRepository.remove(transaction);
   }
 }
 

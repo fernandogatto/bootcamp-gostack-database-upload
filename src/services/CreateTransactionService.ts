@@ -28,33 +28,29 @@ class CreateTransactionService {
       throw new AppError('This transaction must be income or outcome.');
     }
 
-    const balance = await transactionsRepository.getBalance();
+    const { total } = await transactionsRepository.getBalance();
 
-    if (type === 'outcome') {
-      const { total } = balance;
-
-      if (value > total) {
-        throw new AppError('This transaction has a outcome bigger than total.');
-      }
+    if (type === 'outcome' && value > total) {
+      throw new AppError('This transaction has a outcome bigger than total.');
     }
 
-    let categoryTransaction = await categoriesRepository.findOne({
+    let transactionCategory = await categoriesRepository.findOne({
       where: { title: category },
     });
 
-    if (!categoryTransaction) {
-      categoryTransaction = categoriesRepository.create({
+    if (!transactionCategory) {
+      transactionCategory = categoriesRepository.create({
         title: category,
       });
 
-      await categoriesRepository.save(categoryTransaction);
+      await categoriesRepository.save(transactionCategory);
     }
 
     const transaction = transactionsRepository.create({
       title,
       value,
       type,
-      category_id: categoryTransaction.id,
+      category: transactionCategory,
     });
 
     await transactionsRepository.save(transaction);
